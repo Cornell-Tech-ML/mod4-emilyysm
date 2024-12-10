@@ -34,8 +34,7 @@ class Conv1d(minitorch.Module):
         self.bias = RParam(1, out_channels, 1)
 
     def forward(self, input):
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        return minitorch.conv1d(input, self.weights.value) + self.bias.value
 
 
 class CNNSentimentKim(minitorch.Module):
@@ -60,17 +59,35 @@ class CNNSentimentKim(minitorch.Module):
         dropout=0.25,
     ):
         super().__init__()
-        self.feature_map_size = feature_map_size
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        self.dropout = dropout
+
+        self.conv1 = Conv1d(in_channels=embedding_size, out_channels=feature_map_size, kernel_width=filter_sizes[0])
+        self.conv2 = Conv1d(in_channels=embedding_size, out_channels=feature_map_size, kernel_width=filter_sizes[1])
+        self.conv3 = Conv1d(in_channels=embedding_size, out_channels=feature_map_size, kernel_width=filter_sizes[2])
+
+        self.fc = Linear(feature_map_size, 1)
+
 
     def forward(self, embeddings):
         """
         embeddings tensor: [batch x sentence length x embedding dim]
         """
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        # Transpose to match Conv1d input requirements: [batch_size, embedding_dim, sentence_length]
+        embeddings = embeddings.permute(0, 2, 1)
 
+        # Apply each convolutional layer followed by ReLU and global max pooling
+        p1 = minitorch.max(self.conv1(embeddings).relu(), dim=2)
+        p2 = minitorch.max(self.conv2(embeddings).relu(), dim=2)
+        p3 = minitorch.max(self.conv3(embeddings).relu(), dim=2)
+
+        # Concatenate the pooled outputs
+        x2 = p1 + p2 + p3
+
+        # Apply the fully connected layer
+        fullcon = self.fc(x2.view(x2.shape[0],x2.shape[1]))
+        drop = minitorch.dropout(input=fullcon, p = self.dropout, ignore = not self.training)
+        out = drop.sigmoid().view(embeddings.shape[0])
+        return out
 
 # Evaluation helper methods
 def get_predictions_array(y_true, model_output):

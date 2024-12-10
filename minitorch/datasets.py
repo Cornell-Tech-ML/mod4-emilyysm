@@ -5,6 +5,17 @@ from typing import List, Tuple
 
 
 def make_pts(N: int) -> List[Tuple[float, float]]:
+    """Make 'N' random data points.
+
+    Args:
+    ----
+        N: Number of points to generate.
+
+    Returns:
+    -------
+        The specified number of random data points.
+
+    """
     X = []
     for i in range(N):
         x_1 = random.random()
@@ -21,6 +32,7 @@ class Graph:
 
 
 def simple(N: int) -> Graph:
+    """Creates a dataset with 'N' points and graphs it."""
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -30,6 +42,7 @@ def simple(N: int) -> Graph:
 
 
 def diag(N: int) -> Graph:
+    """Creates a dataset with 'N' points and graphs it diagonally."""
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -39,6 +52,7 @@ def diag(N: int) -> Graph:
 
 
 def split(N: int) -> Graph:
+    """Creates a dataset with 'N' points, assign each point to one of two groups, then graph the result."""
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -48,6 +62,7 @@ def split(N: int) -> Graph:
 
 
 def xor(N: int) -> Graph:
+    """Creates a dataset with 'N' points and graphs the result of applying logical XOR to each point."""
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -57,6 +72,7 @@ def xor(N: int) -> Graph:
 
 
 def circle(N: int) -> Graph:
+    """Creates a dataset with 'N' points and color graph points based on if it is in the unit circle."""
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -67,6 +83,8 @@ def circle(N: int) -> Graph:
 
 
 def spiral(N: int) -> Graph:
+    """Creates a dataset with 'N' points and colors the graph based on a spiral."""
+
     def x(t: float) -> float:
         return t * math.cos(t) / 20.0
 
