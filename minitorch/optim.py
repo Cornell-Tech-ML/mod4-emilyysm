@@ -15,23 +15,27 @@ class SGD(Optimizer):
         self.lr = lr
 
     def zero_grad(self) -> None:
-        for p in self.parameters:
-            if p.value is None:
+        """Set gradients and derivatives to None."""
+        for param in self.parameters:
+            if param.value is None:
                 continue
-            if hasattr(p.value, "derivative"):
-                if p.value.derivative is not None:
-                    p.value.derivative = None
-            if hasattr(p.value, "grad"):
-                if p.value.grad is not None:
-                    p.value.grad = None
+            if hasattr(param.value, "derivative"):
+                if param.value.derivative is not None:
+                    param.value.derivative = None
+            if hasattr(param.value, "grad"):
+                if param.value.grad is not None:
+                    param.value.grad = None
 
     def step(self) -> None:
-        for p in self.parameters:
-            if p.value is None:
+        """Take step in gradient/derivative direction."""
+        for param in self.parameters:
+            if param.value is None:
                 continue
-            if hasattr(p.value, "derivative"):
-                if p.value.derivative is not None:
-                    p.update(Scalar(p.value.data - self.lr * p.value.derivative))
-            elif hasattr(p.value, "grad"):
-                if p.value.grad is not None:
-                    p.update(p.value - self.lr * p.value.grad)
+            if hasattr(param.value, "derivative"):
+                if param.value.derivative is not None:
+                    param.update(
+                        Scalar(param.value.data - self.lr * param.value.derivative)
+                    )
+            elif hasattr(param.value, "grad"):
+                if param.value.grad is not None:
+                    param.update(param.value - self.lr * param.value.grad)

@@ -41,8 +41,7 @@ class Conv2d(minitorch.Module):
         self.bias = RParam(out_channels, 1, 1)
 
     def forward(self, input):
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        return minitorch.conv2d(input, self.weights.value) + self.bias.value
 
 
 class Network(minitorch.Module):
@@ -67,12 +66,41 @@ class Network(minitorch.Module):
         self.mid = None
         self.out = None
 
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        # First convolutional layer
+        self.conv1 = Conv2d(1, 4, 3, 3)
+
+        # Second convolutional layer
+        self.conv2 = Conv2d(4, 8, 3, 3)
+
+        # Linear layers
+        self.linear1 = Linear(392, 64)
+        self.linear2 = Linear(64, C)
 
     def forward(self, x):
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        # Step 1: First convolution and ReLU
+        self.mid = self.conv1.forward(x)
+        self.mid = self.mid.relu()
+
+        # Step 2: Second convolution and ReLU
+        self.out = self.conv2.forward(self.mid)
+        self.out = self.out.relu()
+
+        # Step 3: Max pooling
+        pooled = minitorch.maxpool2d(self.out, (4, 4))
+
+        # Step 4: Flatten
+        flattened = pooled.view(pooled.shape[0], 392)
+
+        # Step 5: First linear layer with ReLU and dropout
+        hidden = self.linear1.forward(flattened)
+        hidden = hidden.relu()
+        hidden = minitorch.dropout(hidden, 0.25, not self.training)
+
+        # Step 6: Second linear layer
+        logits = self.linear2.forward(hidden)
+
+        # Step 7: LogSoftmax
+        return minitorch.logsoftmax(logits, dim=1)
 
 
 def make_mnist(start, stop):
@@ -99,7 +127,7 @@ class ImageTrain:
         return self.model.forward(minitorch.tensor([x], backend=BACKEND))
 
     def train(
-        self, data_train, data_val, learning_rate, max_epochs=500, log_fn=default_log_fn
+        self, data_train, data_val, learning_rate, max_epochs=25, log_fn=default_log_fn
     ):
         (X_train, y_train) = data_train
         (X_val, y_val) = data_val

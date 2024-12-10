@@ -32,7 +32,28 @@ def test_avg(t: Tensor) -> None:
 @given(tensors(shape=(2, 3, 4)))
 def test_max(t: Tensor) -> None:
     # TODO: Implement for Task 4.4.
-    raise NotImplementedError("Need to implement for Task 4.4")
+    # Test max reduction over axes
+    out = minitorch.max(t, 1)
+    assert_close(out[0, 0, 0], max([t[0, i, 0] for i in range(3)]))
+
+    out = minitorch.max(t, 2)
+    assert_close(out[0, 0, 0], max([t[0, 0, i] for i in range(4)]))
+
+    # Test backward pass
+    t.requires_grad_(True)
+    out = minitorch.max(t, 1)
+    out.sum().backward()
+
+    assert t.grad
+
+    # The gradient should be 1.0 where maximum value occurs and 0.0 elsewhere
+    for i in range(2):
+        for j in range(3):
+            for k in range(4):
+                if t[i, j, k] == out[i, 0, k]:
+                    assert_close(t.grad[i, j, k], 1.0)
+                else:
+                    assert_close(t.grad[i, j, k], 0.0)
 
 
 @pytest.mark.task4_4
